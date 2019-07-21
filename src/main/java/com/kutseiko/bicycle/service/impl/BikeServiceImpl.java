@@ -2,6 +2,7 @@ package com.kutseiko.bicycle.service.impl;
 
 import com.kutseiko.bicycle.DTO.BikeDto;
 import com.kutseiko.bicycle.entity.Bike;
+import com.kutseiko.bicycle.entity.Station;
 import com.kutseiko.bicycle.repository.BikeRepository;
 import com.kutseiko.bicycle.service.BikeService;
 import java.util.List;
@@ -27,7 +28,7 @@ public class BikeServiceImpl implements BikeService {
 
     @Override
     public Optional<Bike> createBike(BikeDto bikeDto) {
-        Bike bike = new Bike().setInfo(bikeDto.getInfo()).setStationId(bikeDto.getStationId());
+        Bike bike = new Bike().setInfo(bikeDto.getInfo()).setStation(new Station().setId(bikeDto.getStationId()));
         return bikeRepository.addBike(bike);
     }
 
@@ -38,7 +39,7 @@ public class BikeServiceImpl implements BikeService {
 
     @Override
     public Optional<Bike> updateBike(Long id, BikeDto bikeDto) {
-        Bike bike = new Bike().setId(id).setInfo(bikeDto.getInfo()).setStationId(bikeDto.getStationId());
+        Bike bike = new Bike().setId(id).setInfo(bikeDto.getInfo()).setStation(new Station().setId(bikeDto.getStationId()));
         return bikeRepository.updateBike(bike);
     }
 }

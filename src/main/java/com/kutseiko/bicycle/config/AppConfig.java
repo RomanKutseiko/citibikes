@@ -1,26 +1,26 @@
 package com.kutseiko.bicycle.config;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.context.annotation.Bean;
 
 @SpringBootConfiguration
 public class AppConfig {
 
-    @Value("${spring.datasource.url}")
+    /*@Value("${spring.datasource.url}")
     private String databaseUrl;
 
     @Value("${spring.datasource.username}")
     private String databaseUser;
 
     @Value("${spring.datasource.password}")
-    private String databasePassword;
+    private String databasePassword;*/
 
+    /*@Bean
+    @ConfigurationProperties("spring.datasource")
+    public DataSource dataSource() {
+        return DataSourceBuilder.create().build();
+    }*/
 
-    //singleton
+    /*
     @Bean
     public Connection connection() {
         try {
@@ -29,6 +29,6 @@ public class AppConfig {
             e.printStackTrace();
         }
         return null;
-    }
+    }*/
 
 }

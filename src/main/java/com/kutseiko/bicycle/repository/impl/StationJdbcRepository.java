@@ -13,17 +13,19 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
+
 @Component
 @RequiredArgsConstructor
 public class StationJdbcRepository implements StationRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
     @Override
     public Optional<Station> getStationById(Long id) {
-        String getStationById = "SELECT * FROM station WHERE id=?";
-        try {
-            PreparedStatement ps = connection.prepareStatement(getStationById);
+        String sql = "SELECT * FROM station WHERE id=?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -38,10 +40,10 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public List<Station> getAllStations() {
-        String getStations = "SELECT * FROM station";
+        String sql = "SELECT * FROM station";
         List<Station> stations = new ArrayList<>();
-        try {
-            PreparedStatement ps = connection.prepareStatement(getStations);
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 stations.add(new Station().setId(rs.getLong("id")).setLatitude(rs.getDouble("latitude"))
@@ -55,9 +57,9 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public Optional<Station> updateStation(Station station) {
-        String updateStationById = "UPDATE station SET name=?, latitude=?, longitude=? WHERE id=?";
-        try {
-            PreparedStatement ps = connection.prepareStatement(updateStationById);
+        String sql = "UPDATE station SET name=?, latitude=?, longitude=? WHERE id=?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, station.getName());
             ps.setDouble(2, station.getLatitude());
             ps.setDouble(3, station.getLongitude());
@@ -71,10 +73,10 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public boolean deleteStationById(Long id) {
-        String deleteStationById = "DELETE FROM station WHERE id=?";
+        String sql = "DELETE FROM station WHERE id=?";
         boolean deleted = false;
-        try {
-            PreparedStatement ps = connection.prepareStatement(deleteStationById);
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
@@ -85,9 +87,9 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public Optional<Station> addStation(Station station) {
-        String addStation = "INSERT INTO station(name, latitude, longitude) VALUES (?, ?, ?)";
-        try {
-            PreparedStatement ps = connection.prepareStatement(addStation, Statement.RETURN_GENERATED_KEYS);
+        String sql = "INSERT INTO station(name, latitude, longitude) VALUES (?, ?, ?)";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, station.getName());
             ps.setDouble(2, station.getLatitude());
             ps.setDouble(3, station.getLongitude());

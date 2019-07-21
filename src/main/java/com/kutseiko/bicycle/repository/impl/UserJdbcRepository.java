@@ -16,19 +16,21 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
+
 @Component
 @RequiredArgsConstructor
 public class UserJdbcRepository implements UserRepository {
 
-    private final Connection connection;
+    private final DataSource dataSource;
 
     @Override
     public Optional<User> getUserById(Long id) {
-        String getStationById = "SELECT * FROM appuser WHERE id=?";
+        String sql = "SELECT * FROM appuser WHERE id=?";
         User user = new User();
         Optional<User> result = Optional.empty();
-        try {
-            PreparedStatement ps = connection.prepareStatement(getStationById);
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -48,10 +50,10 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public List<User> getAllUsers() {
-        String getUsers = "SELECT * FROM appuser";
+        String sql = "SELECT * FROM appuser";
         List<User> users = new ArrayList<>();
-        try {
-            PreparedStatement ps = connection.prepareStatement(getUsers);
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 users.add(new User()
@@ -69,9 +71,9 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public Optional<User> updateUser(User user) {
-        String updateUserById = "UPDATE appuser SET birthday=?, email=?, gender=?, user_type=? WHERE id=?";
-        try {
-            PreparedStatement ps = connection.prepareStatement(updateUserById);
+        String sql = "UPDATE appuser SET birthday=?, email=?, gender=?, user_type=? WHERE id=?";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setDate(1, convertLocalDateToDate(user.getDateOfBirth()));
             ps.setString(2, user.getEmail());
             ps.setInt(3, user.getGender().getCode());
@@ -86,10 +88,10 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public boolean deleteUserById(Long id) {
-        String deleteUser = "DELETE FROM appuser WHERE id=?";
+        String sql = "DELETE FROM appuser WHERE id=?";
         boolean deleted = false;
-        try {
-            PreparedStatement ps = connection.prepareStatement(deleteUser);
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
@@ -100,9 +102,9 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public Optional<User> addUser(User user) {
-        String insertUser = "INSERT INTO appuser(birthday, email, gender, user_type) VALUES (?, ?, ?, ?)";
-        try {
-            PreparedStatement ps = connection.prepareStatement(insertUser, Statement.RETURN_GENERATED_KEYS);
+        String sql = "INSERT INTO appuser(birthday, email, gender, user_type) VALUES (?, ?, ?, ?)";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setDate(1, convertLocalDateToDate(user.getDateOfBirth()));
             ps.setString(2, user.getEmail());
             ps.setInt(3, user.getGender().getCode());

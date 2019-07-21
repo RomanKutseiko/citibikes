@@ -12,7 +12,7 @@ public class Bike {
     Long id;
 
     @NotNull
-    Long stationId;
+    Station station;
 
     String info;
 }
