@@ -1,4 +1,4 @@
-package com.kutseiko.bicycle.entity;
+package com.kutseiko.bicycle.DTO;
 
 import java.time.LocalDateTime;
 import javax.validation.constraints.NotNull;
@@ -6,22 +6,18 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
-@Accessors(chain = true)
-public class Trip {
+public class TripDto {
 
     @NotNull
-    Long id;
+    Long userId;
 
     @NotNull
-    User user;
+    Long bikeId;
 
     @NotNull
-    Bike bike;
+    Long startStationId;
 
-    @NotNull
-    Station startStation;
-
-    Station endStation;
+    Long endStationId;
 
     @NotNull
     LocalDateTime startTime;

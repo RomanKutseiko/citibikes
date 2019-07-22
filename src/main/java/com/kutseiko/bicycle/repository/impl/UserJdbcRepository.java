@@ -1,5 +1,8 @@
 package com.kutseiko.bicycle.repository.impl;
 
+import static com.kutseiko.bicycle.utils.DateConverter.convertDateToLocalDate;
+import static com.kutseiko.bicycle.utils.DateConverter.convertLocalDateToDate;
+
 import com.kutseiko.bicycle.core.type.Gender;
 import com.kutseiko.bicycle.core.type.UserType;
 import com.kutseiko.bicycle.entity.User;
@@ -9,7 +12,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -118,13 +120,5 @@ public class UserJdbcRepository implements UserRepository {
             e.printStackTrace();
         }
         return Optional.of(user);
-    }
-
-    private LocalDate convertDateToLocalDate(java.sql.Date date) {
-        return date.toLocalDate();
-    }
-
-    private java.sql.Date convertLocalDateToDate(LocalDate localDate) {
-        return java.sql.Date.valueOf(localDate);
     }
 }
