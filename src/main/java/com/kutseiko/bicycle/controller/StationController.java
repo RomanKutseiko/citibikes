@@ -24,27 +24,27 @@ public class StationController {
     private final StationService stationService;
 
     @GetMapping("/{id}")
-    public Optional<Station> getBikeByID(@PathVariable(name = "id")Long id) {
+    public Optional<Station> getStationByID(@PathVariable(name = "id")Long id) {
         return stationService.getStationById(id);
     }
 
     @GetMapping
-    public List<Station> getAllBikes() {
+    public List<Station> getAllStations() {
         return stationService.getAllStations();
     }
 
     @PostMapping
-    public Optional<Station> createBike(@RequestBody @Valid StationDto stationDto) {
+    public Optional<Station> createStation(@RequestBody @Valid StationDto stationDto) {
         return stationService.createStation(stationDto);
     }
 
     @PutMapping("/{id}")
-    public Optional<Station> updateBike(@RequestBody @Valid StationDto stationDto, @PathVariable(name = "id")Long id) {
+    public Optional<Station> updateStation(@RequestBody @Valid StationDto stationDto, @PathVariable(name = "id")Long id) {
         return stationService.updateStation(id, stationDto);
     }
 
     @DeleteMapping("/{id}")
-    public boolean updateBike(@PathVariable(name = "id")Long id) {
+    public boolean updateStation(@PathVariable(name = "id")Long id) {
         return stationService.deleteStationById(id);
     }
 

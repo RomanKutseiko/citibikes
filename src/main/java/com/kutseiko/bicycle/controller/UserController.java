@@ -24,27 +24,27 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{id}")
-    public Optional<User> getBikeByID(@PathVariable(name = "id")Long id) {
+    public Optional<User> getUserByID(@PathVariable(name = "id")Long id) {
         return userService.getUserById(id);
     }
 
     @GetMapping
-    public List<User> getAllBikes() {
+    public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @PostMapping
-    public Optional<User> createBike(@RequestBody @Valid UserDto UserDto) {
+    public Optional<User> createUser(@RequestBody @Valid UserDto UserDto) {
         return userService.createUser(UserDto);
     }
 
     @PutMapping("/{id}")
-    public Optional<User> updateBike(@RequestBody @Valid UserDto UserDto, @PathVariable(name = "id")Long id) {
+    public Optional<User> updateUser(@RequestBody @Valid UserDto UserDto, @PathVariable(name = "id")Long id) {
         return userService.updateUser(id, UserDto);
     }
 
     @DeleteMapping("/{id}")
-    public boolean updateBike(@PathVariable(name = "id")Long id) {
+    public boolean updateUser(@PathVariable(name = "id")Long id) {
         return userService.deleteUserById(id);
     }
 
