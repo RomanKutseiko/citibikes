@@ -4,6 +4,10 @@ import static com.kutseiko.bicycle.utils.DateConverter.convertDateToLocalDate;
 
 import com.kutseiko.bicycle.core.type.Gender;
 import com.kutseiko.bicycle.core.type.UserType;
+import com.kutseiko.bicycle.core.type.db.tables.AppUserTable;
+import com.kutseiko.bicycle.core.type.db.tables.BikeTable;
+import com.kutseiko.bicycle.core.type.db.tables.StationTable;
+import com.kutseiko.bicycle.core.type.db.tables.TripTable;
 import com.kutseiko.bicycle.entity.Bike;
 import com.kutseiko.bicycle.entity.Trip;
 import com.kutseiko.bicycle.entity.Station;
@@ -23,18 +27,17 @@ import org.springframework.stereotype.Component;
 public class TripJdbcRepository implements TripRepository {
 
     private final DataSource dataSource;
+    private final String SELECT_TRIPS = "SELECT * FROM " + TripTable.TABLE
+            + " LEFT JOIN " + AppUserTable.TABLE + " ON " + TripTable.USER_ID + " = " + AppUserTable.TABLE + "." + AppUserTable.ID
+            + " LEFT JOIN " + BikeTable.TABLE + " ON " + TripTable.BIKE_ID + " = " + BikeTable.TABLE + "." + BikeTable.ID
+            + " LEFT JOIN " + StationTable.TABLE + " AS bs ON " + BikeTable.STATION_ID + " = bs." + StationTable.ID
+            + " LEFT JOIN " + StationTable.TABLE + " AS ss ON " + TripTable.START_STATION_ID + " = ss." + StationTable.ID
+            + " LEFT JOIN " + StationTable.TABLE + " AS es ON " + TripTable.END_STATION_ID + " = es." + StationTable.ID;
 
     @Override
     public Optional<Trip> getTripById(Long id) {
-        String sql = "SELECT * FROM trip "
-            + "LEFT JOIN appuser ON user_id = appuser.id  "
-            + "LEFT JOIN bike ON bike_id = bike.id  "
-            + "LEFT JOIN station AS bs ON station_id = bs.id  "
-            + "LEFT JOIN station AS ss ON start_station_id = ss.id  "
-            + "LEFT JOIN station AS es ON end_station_id = es.id "
-            + "WHERE trip.id=?";
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+            PreparedStatement ps = connection.prepareStatement(SELECT_TRIPS + " WHERE " + TripTable.TABLE + "." + TripTable.ID + "=?")) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -48,15 +51,9 @@ public class TripJdbcRepository implements TripRepository {
 
     @Override
     public List<Trip> getAllTrips() {
-        String sql = "SELECT * FROM trip "
-                + "LEFT JOIN appuser ON user_id = appuser.id  "
-                + "LEFT JOIN bike ON bike_id = bike.id  "
-                + "LEFT JOIN station AS bs ON station_id = bs.id  "
-                + "LEFT JOIN station AS ss ON start_station_id = ss.id  "
-                + "LEFT JOIN station AS es ON end_station_id = es.id";
         List<Trip> Trips = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(SELECT_TRIPS)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Trips.add(getTripFromRS(rs));
@@ -69,8 +66,9 @@ public class TripJdbcRepository implements TripRepository {
 
     @Override
     public Optional<Trip> updateTrip(Trip trip) {
-        String sql = "UPDATE trip SET user_id=?, bike_id=?, start_station_id=?,"
-            + " end_station_id=?, start_time=?, end_time=? WHERE id=?";
+        String sql = "UPDATE " + TripTable.TABLE + " SET " + TripTable.USER_ID + "=?, " + TripTable.BIKE_ID + "=?, "
+            + TripTable.START_STATION_ID + "=?," + TripTable.END_STATION_ID + "=?, " + TripTable.START_TIME + "=?, "
+            + TripTable.END_TIME + "=? WHERE " + TripTable.ID + "=?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, trip.getUser().getId());
@@ -89,7 +87,7 @@ public class TripJdbcRepository implements TripRepository {
 
     @Override
     public boolean deleteTripById(Long id) {
-        String sql = "DELETE FROM trip WHERE id=?";
+        String sql = "DELETE FROM " + TripTable.TABLE + " WHERE " + TripTable.ID + "=?";
         boolean deleted = false;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
