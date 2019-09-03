@@ -1,6 +1,7 @@
 package com.kutseiko.bicycle.core.type;
 
 import lombok.Getter;
+import org.apache.commons.lang3.EnumUtils;
 
 @Getter
 public enum UserType {
@@ -16,8 +17,8 @@ public enum UserType {
 
 
     public static UserType getUserTypeByName(String name) {
-        if ("CUSTOMER".equals(name.toUpperCase())) {
-            return CUSTOMER;
+        if (EnumUtils.isValidEnumIgnoreCase(UserType.class, name)) {
+            return valueOf(name.toUpperCase());
         }
         return SUBSCRIBER;
     }

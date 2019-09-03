@@ -3,11 +3,12 @@ package com.kutseiko.bicycle.utils;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class DateConverter {
 
     public static LocalDate convertDateToLocalDate(java.sql.Date date) {
-        return date.toLocalDate();
+        return Objects.isNull(date) ? null : date.toLocalDate();
     }
 
     public static java.sql.Date convertLocalDateToDate(LocalDate localDate) {

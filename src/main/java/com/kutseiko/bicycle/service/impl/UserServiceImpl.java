@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<User> createUser(UserDto userDto) {
         User user = new User().setEmail(userDto.getEmail()).setDateOfBirth(userDto.getDateOfBirth())
-            .setGender(Gender.valueOf(userDto.getGender())).setUserType(UserType.getUserTypeByName(userDto.getUserType()));
+            .setGender(Gender.getGenderByName(userDto.getGender())).setUserType(UserType.getUserTypeByName(userDto.getUserType()));
         return userRepository.addUser(user);
     }
 
@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<User> updateUser(Long id, UserDto userDto) {
         User user = new User().setId(id).setEmail(userDto.getEmail()).setDateOfBirth(userDto.getDateOfBirth())
-            .setGender(Gender.valueOf(userDto.getGender())).setUserType(UserType.getUserTypeByName(userDto.getUserType()));
+            .setGender(Gender.getGenderByName(userDto.getGender())).setUserType(UserType.getUserTypeByName(userDto.getUserType()));
         return userRepository.updateUser(user);
     }
 }

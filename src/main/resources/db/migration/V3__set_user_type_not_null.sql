@@ -1,0 +1,1 @@
+ALTER TABLE AppUser ALTER COLUMN user_type SET NOT NULL;

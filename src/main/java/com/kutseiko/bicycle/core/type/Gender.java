@@ -1,27 +1,26 @@
 package com.kutseiko.bicycle.core.type;
 
 import lombok.Getter;
+import org.apache.commons.lang3.EnumUtils;
 
 @Getter
 public enum Gender {
 
-    ANOTHER("ANOTHER", 0),
-    MALE("MALE", 1),
-    FEMALE("FEMALE", 2);
+    ANOTHER("ANOTHER"),
+    FEMALE("FEMALE"),
+    MALE("MALE");
 
     private String name;
-    private Integer code;
 
-    Gender(String name, Integer code) {
+    Gender(String name) {
         this.name = name;
-        this.code = code;
     }
 
-    public static Gender valueOf(int code) {
-        switch(code) {
-            case 1: return MALE;
-            case 2: return FEMALE;
-            default: return ANOTHER;
+    public static Gender getGenderByName(String name) {
+        if (EnumUtils.isValidEnumIgnoreCase(Gender.class, name)) {
+            return valueOf(name.toUpperCase());
+        } else {
+            return ANOTHER;
         }
     }
 }

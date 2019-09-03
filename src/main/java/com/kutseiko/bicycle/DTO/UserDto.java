@@ -1,5 +1,6 @@
 package com.kutseiko.bicycle.DTO;
 
+import com.kutseiko.bicycle.core.type.Gender;
 import java.time.LocalDate;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
@@ -11,8 +12,7 @@ public class UserDto {
 
     LocalDate dateOfBirth;
 
-    @NotNull
-    int gender = 0;
+    String gender = Gender.ANOTHER.getName();
 
     @NotNull
     String userType;

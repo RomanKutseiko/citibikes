@@ -40,8 +40,8 @@ public class UserJdbcRepository implements UserRepository {
                     .setId(rs.getLong("id"))
                     .setDateOfBirth(convertDateToLocalDate(rs.getDate("birthday")))
                     .setEmail(rs.getString("email"))
-                    .setGender(Gender.valueOf(rs.getInt("gender")))
-                    .setUserType(UserType.getUserTypeByName(rs.getString("user_type").toUpperCase())));
+                    .setGender(Gender.valueOf(rs.getString("gender")))
+                    .setUserType(UserType.valueOf(rs.getString("user_type"))));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -62,8 +62,8 @@ public class UserJdbcRepository implements UserRepository {
                     .setId(rs.getLong("id"))
                     .setDateOfBirth(convertDateToLocalDate(rs.getDate("birthday")))
                     .setEmail(rs.getString("email"))
-                    .setGender(Gender.valueOf(rs.getInt("gender")))
-                    .setUserType(UserType.getUserTypeByName(rs.getString("user_type").toUpperCase())));
+                    .setGender(Gender.valueOf(rs.getString("gender")))
+                    .setUserType(UserType.valueOf(rs.getString("user_type"))));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -73,13 +73,13 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public Optional<User> updateUser(User user) {
-        String sql = "UPDATE appuser SET birthday=?, email=?, gender=?, user_type=? WHERE id=?";
+        String sql = "UPDATE appuser SET birthday=?, email=?, gender=?::GENDER_ENUM, user_type=?::USER_TYPE_ENUM WHERE id=?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setDate(1, convertLocalDateToDate(user.getDateOfBirth()));
             ps.setString(2, user.getEmail());
-            ps.setInt(3, user.getGender().getCode());
-            ps.setString(4, user.getUserType().getName().toUpperCase());
+            ps.setString(3, user.getGender().getName());
+            ps.setString(4, user.getUserType().getName());
             ps.setLong(5, user.getId());
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -104,13 +104,13 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public Optional<User> addUser(User user) {
-        String sql = "INSERT INTO appuser(birthday, email, gender, user_type) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO appuser(birthday, email, gender, user_type) VALUES (?, ?, ?::GENDER_ENUM, ?::USER_TYPE_ENUM)";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setDate(1, convertLocalDateToDate(user.getDateOfBirth()));
             ps.setString(2, user.getEmail());
-            ps.setInt(3, user.getGender().getCode());
-            ps.setString(4, user.getUserType().getName().toUpperCase());
+            ps.setString(3, user.getGender().getName());
+            ps.setString(4, user.getUserType().getName());
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
