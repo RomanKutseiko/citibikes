@@ -5,6 +5,7 @@ import static com.kutseiko.bicycle.utils.DateConverter.convertLocalDateToDate;
 
 import com.kutseiko.bicycle.core.type.Gender;
 import com.kutseiko.bicycle.core.type.UserType;
+import com.kutseiko.bicycle.core.type.db.tables.AppUserTable;
 import com.kutseiko.bicycle.entity.User;
 import com.kutseiko.bicycle.repository.UserRepository;
 import java.sql.Connection;
@@ -28,20 +29,14 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public Optional<User> getUserById(Long id) {
-        String sql = "SELECT * FROM appuser WHERE id=?";
-        User user = new User();
+        String sql = "SELECT * FROM " + AppUserTable.TABLE + " WHERE " + AppUserTable.ID + "=?";
         Optional<User> result = Optional.empty();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                result = Optional.of(user
-                    .setId(rs.getLong("id"))
-                    .setDateOfBirth(convertDateToLocalDate(rs.getDate("birthday")))
-                    .setEmail(rs.getString("email"))
-                    .setGender(Gender.valueOf(rs.getString("gender")))
-                    .setUserType(UserType.valueOf(rs.getString("user_type"))));
+                result = Optional.of(mapUserFromRS(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -52,18 +47,13 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public List<User> getAllUsers() {
-        String sql = "SELECT * FROM appuser";
+        String sql = "SELECT * FROM " + AppUserTable.TABLE;
         List<User> users = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                users.add(new User()
-                    .setId(rs.getLong("id"))
-                    .setDateOfBirth(convertDateToLocalDate(rs.getDate("birthday")))
-                    .setEmail(rs.getString("email"))
-                    .setGender(Gender.valueOf(rs.getString("gender")))
-                    .setUserType(UserType.valueOf(rs.getString("user_type"))));
+                users.add(mapUserFromRS(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -73,7 +63,8 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public Optional<User> updateUser(User user) {
-        String sql = "UPDATE appuser SET birthday=?, email=?, gender=?::GENDER_ENUM, user_type=?::USER_TYPE_ENUM WHERE id=?";
+        String sql = "UPDATE " + AppUserTable.TABLE + " SET " + AppUserTable.BIRTHDAY + "=?, " + AppUserTable.EMAIL + "=?, "
+            + AppUserTable.GENDER + "=?::GENDER_ENUM, " + AppUserTable.USER_TYPE + "=?::USER_TYPE_ENUM WHERE " + AppUserTable.ID + "=?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setDate(1, convertLocalDateToDate(user.getDateOfBirth()));
@@ -90,7 +81,7 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public boolean deleteUserById(Long id) {
-        String sql = "DELETE FROM appuser WHERE id=?";
+        String sql = "DELETE FROM " + AppUserTable.TABLE + " WHERE " + AppUserTable.ID + "=?";
         boolean deleted = false;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -104,7 +95,8 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public Optional<User> addUser(User user) {
-        String sql = "INSERT INTO appuser(birthday, email, gender, user_type) VALUES (?, ?, ?::GENDER_ENUM, ?::USER_TYPE_ENUM)";
+        String sql = "INSERT INTO " + AppUserTable.TABLE + "(" + AppUserTable.BIRTHDAY + ", " + AppUserTable.EMAIL + ", "
+            + AppUserTable.GENDER + ", " + AppUserTable.USER_TYPE + ") VALUES (?, ?, ?::GENDER_ENUM, ?::USER_TYPE_ENUM)";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setDate(1, convertLocalDateToDate(user.getDateOfBirth()));
@@ -120,5 +112,13 @@ public class UserJdbcRepository implements UserRepository {
             e.printStackTrace();
         }
         return Optional.of(user);
+    }
+
+    private User mapUserFromRS(ResultSet rs) throws SQLException {
+        return new User().setId(rs.getLong(AppUserTable.ID))
+            .setDateOfBirth(convertDateToLocalDate(rs.getDate(AppUserTable.BIRTHDAY)))
+            .setEmail(rs.getString(AppUserTable.EMAIL))
+            .setGender(Gender.valueOf(rs.getString(AppUserTable.GENDER)))
+            .setUserType(UserType.valueOf(rs.getString(AppUserTable.USER_TYPE)));
     }
 }

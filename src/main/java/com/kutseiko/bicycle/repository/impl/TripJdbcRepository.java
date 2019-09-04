@@ -101,7 +101,8 @@ public class TripJdbcRepository implements TripRepository {
 
     @Override
     public Optional<Trip> addTrip(Trip trip) {
-        String sql = "INSERT INTO Trip(user_id, bike_id, start_station_id, end_station_id, start_time, end_time) "
+        String sql = "INSERT INTO " + TripTable.TABLE + "(" + TripTable.USER_ID + ", " + TripTable.BIKE_ID + ", "
+            + TripTable.START_STATION_ID + ", " + TripTable.END_STATION_ID + ", " + TripTable.START_TIME + ", " + TripTable.END_TIME + ") "
             + "VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -125,16 +126,16 @@ public class TripJdbcRepository implements TripRepository {
     private Trip getTripFromRS(ResultSet rs) throws SQLException {
         return new Trip()
                 .setId(rs.getLong(1))
-                .setStartTime(rs.getTimestamp("start_time").toLocalDateTime())
-                .setEndTime(rs.getTimestamp("end_time").toLocalDateTime())
+                .setStartTime(rs.getTimestamp(TripTable.START_TIME).toLocalDateTime())
+                .setEndTime(rs.getTimestamp(TripTable.END_TIME).toLocalDateTime())
                 .setUser(new User().setId(rs.getLong(8))
-                        .setDateOfBirth(convertDateToLocalDate(rs.getDate("birthday")))
-                        .setEmail(rs.getString("email"))
-                        .setGender(Gender.valueOf(rs.getString("gender")))
-                        .setUserType(UserType.valueOf(rs.getString("user_type"))))
+                        .setDateOfBirth(convertDateToLocalDate(rs.getDate(AppUserTable.BIRTHDAY)))
+                        .setEmail(rs.getString(AppUserTable.EMAIL))
+                        .setGender(Gender.valueOf(rs.getString(AppUserTable.GENDER)))
+                        .setUserType(UserType.valueOf(rs.getString(AppUserTable.USER_TYPE))))
                 .setBike(new Bike()
                         .setId(rs.getLong(13))
-                        .setInfo(rs.getString("info"))
+                        .setInfo(rs.getString(BikeTable.INFO))
                         .setStation(new Station()
                                 .setId(rs.getLong(14))
                                 .setName(rs.getString(17))

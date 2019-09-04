@@ -1,5 +1,6 @@
 package com.kutseiko.bicycle.repository.impl;
 
+import com.kutseiko.bicycle.core.type.db.tables.StationTable;
 import com.kutseiko.bicycle.entity.Station;
 import com.kutseiko.bicycle.repository.StationRepository;
 import java.sql.Connection;
@@ -23,14 +24,13 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public Optional<Station> getStationById(Long id) {
-        String sql = "SELECT * FROM station WHERE id=?";
+        String sql = "SELECT * FROM " + StationTable.TABLE + " WHERE " + StationTable.ID + "=?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                return Optional.of(new Station().setId(rs.getLong("id")).setLatitude(rs.getDouble("latitude"))
-                    .setLongitude(rs.getDouble("longitude")).setName(rs.getString("name")));
+                return Optional.of(mapStationFromRS(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -40,14 +40,13 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public List<Station> getAllStations() {
-        String sql = "SELECT * FROM station";
+        String sql = "SELECT * FROM " + StationTable.TABLE;
         List<Station> stations = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                stations.add(new Station().setId(rs.getLong("id")).setLatitude(rs.getDouble("latitude"))
-                    .setLongitude(rs.getDouble("longitude")).setName(rs.getString("name")));
+                stations.add(mapStationFromRS(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -57,7 +56,8 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public Optional<Station> updateStation(Station station) {
-        String sql = "UPDATE station SET name=?, latitude=?, longitude=? WHERE id=?";
+        String sql = "UPDATE " + StationTable.TABLE + " SET " + StationTable.NAME + "=?, " + StationTable.LATITUDE + "=?, "
+            + StationTable.LONGITUDE + "=? WHERE " + StationTable.ID + "=?";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, station.getName());
@@ -73,7 +73,7 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public boolean deleteStationById(Long id) {
-        String sql = "DELETE FROM station WHERE id=?";
+        String sql = "DELETE FROM " + StationTable.TABLE + " WHERE " + StationTable.ID + "=?";
         boolean deleted = false;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -87,7 +87,8 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public Optional<Station> addStation(Station station) {
-        String sql = "INSERT INTO station(name, latitude, longitude) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO " + StationTable.TABLE + "(" + StationTable.NAME + ", " + StationTable.LATITUDE + ", "
+            + StationTable.LONGITUDE + ") VALUES (?, ?, ?)";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, station.getName());
@@ -102,6 +103,11 @@ public class StationJdbcRepository implements StationRepository {
             e.printStackTrace();
         }
         return Optional.of(station);
+    }
+
+    private Station mapStationFromRS(ResultSet rs) throws SQLException {
+        return new Station().setId(rs.getLong(StationTable.ID)).setLatitude(rs.getDouble(StationTable.LATITUDE))
+            .setLongitude(rs.getDouble(StationTable.LONGITUDE)).setName(rs.getString(StationTable.NAME));
     }
 
 }
