@@ -12,12 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class StationJdbcRepository implements StationRepository {
 
     private final DataSource dataSource;
@@ -33,7 +35,8 @@ public class StationJdbcRepository implements StationRepository {
                 return Optional.of(mapStationFromRS(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return Optional.empty();
     }
@@ -49,7 +52,8 @@ public class StationJdbcRepository implements StationRepository {
                 stations.add(mapStationFromRS(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return stations;
     }
@@ -66,7 +70,8 @@ public class StationJdbcRepository implements StationRepository {
             ps.setLong(4, station.getId());
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return Optional.of(station);
     }
@@ -80,7 +85,8 @@ public class StationJdbcRepository implements StationRepository {
             ps.setLong(1, id);
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return deleted;
     }
@@ -100,7 +106,8 @@ public class StationJdbcRepository implements StationRepository {
                 station.setId(rs.getLong(1));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return Optional.of(station);
     }

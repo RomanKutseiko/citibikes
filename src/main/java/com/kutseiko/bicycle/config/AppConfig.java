@@ -26,7 +26,8 @@ public class AppConfig {
         try {
             return DriverManager.getConnection(databaseUrl, databaseUser, databasePassword);
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return null;
     }*/

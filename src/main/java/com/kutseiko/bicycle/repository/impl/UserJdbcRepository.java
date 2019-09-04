@@ -7,6 +7,7 @@ import com.kutseiko.bicycle.core.type.Gender;
 import com.kutseiko.bicycle.core.type.UserType;
 import com.kutseiko.bicycle.core.type.db.tables.AppUserTable;
 import com.kutseiko.bicycle.entity.User;
+import com.kutseiko.bicycle.exception.EntityNotFoundException;
 import com.kutseiko.bicycle.repository.UserRepository;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,12 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class UserJdbcRepository implements UserRepository {
 
     private final DataSource dataSource;
@@ -35,14 +38,15 @@ public class UserJdbcRepository implements UserRepository {
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                result = Optional.of(mapUserFromRS(rs));
+            if (rs.next()) {
+                return Optional.of(mapUserFromRS(rs));
+            } else {
+                throw new EntityNotFoundException();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
-
-        return result;
     }
 
     @Override
@@ -56,7 +60,8 @@ public class UserJdbcRepository implements UserRepository {
                 users.add(mapUserFromRS(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return users;
     }
@@ -65,6 +70,7 @@ public class UserJdbcRepository implements UserRepository {
     public Optional<User> updateUser(User user) {
         String sql = "UPDATE " + AppUserTable.TABLE + " SET " + AppUserTable.BIRTHDAY + "=?, " + AppUserTable.EMAIL + "=?, "
             + AppUserTable.GENDER + "=?::GENDER_ENUM, " + AppUserTable.USER_TYPE + "=?::USER_TYPE_ENUM WHERE " + AppUserTable.ID + "=?";
+        int rowsAffected;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setDate(1, convertLocalDateToDate(user.getDateOfBirth()));
@@ -72,11 +78,17 @@ public class UserJdbcRepository implements UserRepository {
             ps.setString(3, user.getGender().getName());
             ps.setString(4, user.getUserType().getName());
             ps.setLong(5, user.getId());
-            ps.executeUpdate();
+            rowsAffected = ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
-        return Optional.of(user);
+
+        if (rowsAffected > 0) {
+            return Optional.of(user);
+        } else {
+            throw new EntityNotFoundException();
+        }
     }
 
     @Override
@@ -84,11 +96,12 @@ public class UserJdbcRepository implements UserRepository {
         String sql = "DELETE FROM " + AppUserTable.TABLE + " WHERE " + AppUserTable.ID + "=?";
         boolean deleted = false;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+            PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return deleted;
     }
@@ -109,7 +122,8 @@ public class UserJdbcRepository implements UserRepository {
                 user.setId(rs.getLong(1));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return Optional.of(user);
     }

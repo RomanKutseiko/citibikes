@@ -16,12 +16,14 @@ import java.util.List;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class BikeJdbcRepository implements BikeRepository {
 
     private final DataSource dataSource;
@@ -30,6 +32,7 @@ public class BikeJdbcRepository implements BikeRepository {
     public Optional<Bike> getBikeById(Long id) {
         String sql = "SELECT * FROM " + BikeTable.TABLE + " LEFT JOIN " + StationTable.TABLE + " ON " + BikeTable.STATION_ID + " = "
             + StationTable.TABLE + "." + StationTable.ID + " WHERE " + BikeTable.TABLE + "." + BikeTable.ID + "=?";
+        log.debug(sql);
         try (Connection connection = dataSource.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -38,7 +41,8 @@ public class BikeJdbcRepository implements BikeRepository {
                 return Optional.of(mapBikeFromRS(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return Optional.empty();
     }
@@ -47,6 +51,7 @@ public class BikeJdbcRepository implements BikeRepository {
     public List<Bike> getAllBikes() {
         String sql = "SELECT * FROM " + BikeTable.TABLE + " LEFT JOIN " + StationTable.TABLE + " ON " + BikeTable.STATION_ID + " = "
             + StationTable.TABLE + "." + StationTable.ID;
+        log.debug(sql);
         List<Bike> bikes = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -55,7 +60,8 @@ public class BikeJdbcRepository implements BikeRepository {
                 bikes.add(mapBikeFromRS(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return bikes;
     }
@@ -63,6 +69,7 @@ public class BikeJdbcRepository implements BikeRepository {
     @Override
     public Optional<Bike> updateBike(Bike bike) {
         String sql = "UPDATE " + BikeTable.TABLE + " SET " + BikeTable.STATION_ID + "=?, " + BikeTable.INFO + "=? WHERE "+ BikeTable.ID + "=?";
+        log.debug(sql);
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, bike.getStation().getId());
@@ -70,7 +77,8 @@ public class BikeJdbcRepository implements BikeRepository {
             ps.setLong(3, bike.getId());
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return Optional.of(bike);
     }
@@ -78,13 +86,15 @@ public class BikeJdbcRepository implements BikeRepository {
     @Override
     public boolean deleteBikeById(Long id) {
         String sql = "DELETE FROM " + BikeTable.TABLE + " WHERE " + BikeTable.ID + "=?";
+        log.debug(sql);
         boolean deleted = false;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setLong(1, id);
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return deleted;
     }
@@ -92,6 +102,7 @@ public class BikeJdbcRepository implements BikeRepository {
     @Override
     public Optional<Bike> addBike(Bike bike) {
         String sql = "INSERT INTO " + BikeTable.TABLE + "(" + BikeTable.STATION_ID + ", " + BikeTable.INFO + ") VALUES (?, ?)";
+        log.debug(sql);
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, bike.getStation().getId());
@@ -102,7 +113,8 @@ public class BikeJdbcRepository implements BikeRepository {
                 bike.setId(rs.getLong(1));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return Optional.of(bike);
     }

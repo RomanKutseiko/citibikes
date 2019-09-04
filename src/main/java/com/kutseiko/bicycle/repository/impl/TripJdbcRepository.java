@@ -20,10 +20,12 @@ import java.util.List;
 import java.util.Optional;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class TripJdbcRepository implements TripRepository {
 
     private final DataSource dataSource;
@@ -44,7 +46,8 @@ public class TripJdbcRepository implements TripRepository {
                 return Optional.of(getTripFromRS(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return Optional.empty();
     }
@@ -59,7 +62,8 @@ public class TripJdbcRepository implements TripRepository {
                 Trips.add(getTripFromRS(rs));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return Trips;
     }
@@ -80,7 +84,8 @@ public class TripJdbcRepository implements TripRepository {
             ps.setLong(7, trip.getId());
             ps.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return getTripById(trip.getId());
     }
@@ -94,7 +99,8 @@ public class TripJdbcRepository implements TripRepository {
             ps.setLong(1, id);
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return deleted;
     }
@@ -118,7 +124,8 @@ public class TripJdbcRepository implements TripRepository {
                 trip.setId(rs.getLong(1));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            throw new RuntimeException(e);
         }
         return getTripById(trip.getId());
     }

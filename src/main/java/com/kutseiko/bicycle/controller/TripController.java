@@ -31,6 +31,7 @@ public class TripController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Trip createTrip(@RequestBody @Valid TripDto TripDto) {
         return tripService.createTrip(TripDto).orElseThrow(EntityNotFoundException::new);
     }
@@ -41,6 +42,7 @@ public class TripController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public boolean updateTrip(@PathVariable(name = "id")Long id) {
         return tripService.deleteTripById(id);
     }
