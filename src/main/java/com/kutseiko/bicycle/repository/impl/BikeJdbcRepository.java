@@ -27,14 +27,29 @@ import javax.sql.DataSource;
 public class BikeJdbcRepository implements BikeRepository {
 
     private final DataSource dataSource;
+    private static String getAllSql;
+    private static String getByIdSql;
+    private static String updateSql;
+    private static String deletedSql;
+    private static String addSql;
+    static {
+        StringBuilder sb = new StringBuilder();
+        getAllSql = sb.append("SELECT * FROM ").append(BikeTable.TABLE).append(" LEFT JOIN ").append(StationTable.TABLE).append(" ON ")
+            .append(BikeTable.STATION_ID).append(" = ").append(StationTable.TABLE).append(".").append(StationTable.ID).toString();
+        getByIdSql = sb.append(" WHERE ").append(BikeTable.TABLE).append(".").append(BikeTable.ID + "=?").toString();
+        updateSql = new StringBuilder().append("UPDATE ").append(BikeTable.TABLE).append(" SET ").append(BikeTable.STATION_ID)
+            .append("=?, ").append(BikeTable.INFO).append("=? WHERE ").append(BikeTable.ID).append("=?").toString();
+        deletedSql = new StringBuilder().append("DELETE FROM ").append(BikeTable.TABLE).append(" WHERE ").append(BikeTable.ID)
+            .append("=?").toString();
+        addSql = new StringBuilder().append("INSERT INTO ").append(BikeTable.TABLE).append("(").append(BikeTable.STATION_ID).append(", ")
+            .append(BikeTable.INFO).append(") VALUES (?, ?)").toString();
+    }
 
     @Override
     public Optional<Bike> getBikeById(Long id) {
-        String sql = "SELECT * FROM " + BikeTable.TABLE + " LEFT JOIN " + StationTable.TABLE + " ON " + BikeTable.STATION_ID + " = "
-            + StationTable.TABLE + "." + StationTable.ID + " WHERE " + BikeTable.TABLE + "." + BikeTable.ID + "=?";
-        log.debug(sql);
+        log.debug(getByIdSql);
         try (Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+            PreparedStatement ps = connection.prepareStatement(getByIdSql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -49,12 +64,10 @@ public class BikeJdbcRepository implements BikeRepository {
 
     @Override
     public List<Bike> getAllBikes() {
-        String sql = "SELECT * FROM " + BikeTable.TABLE + " LEFT JOIN " + StationTable.TABLE + " ON " + BikeTable.STATION_ID + " = "
-            + StationTable.TABLE + "." + StationTable.ID;
-        log.debug(sql);
+        log.debug(getAllSql);
         List<Bike> bikes = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(getAllSql)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 bikes.add(mapBikeFromRS(rs));
@@ -68,10 +81,9 @@ public class BikeJdbcRepository implements BikeRepository {
 
     @Override
     public Optional<Bike> updateBike(Bike bike) {
-        String sql = "UPDATE " + BikeTable.TABLE + " SET " + BikeTable.STATION_ID + "=?, " + BikeTable.INFO + "=? WHERE "+ BikeTable.ID + "=?";
-        log.debug(sql);
+        log.debug(updateSql);
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(updateSql)) {
             ps.setLong(1, bike.getStation().getId());
             ps.setString(2, bike.getInfo());
             ps.setLong(3, bike.getId());
@@ -85,11 +97,10 @@ public class BikeJdbcRepository implements BikeRepository {
 
     @Override
     public boolean deleteBikeById(Long id) {
-        String sql = "DELETE FROM " + BikeTable.TABLE + " WHERE " + BikeTable.ID + "=?";
-        log.debug(sql);
+        log.debug(deletedSql);
         boolean deleted = false;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(deletedSql)) {
             ps.setLong(1, id);
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
@@ -101,10 +112,9 @@ public class BikeJdbcRepository implements BikeRepository {
 
     @Override
     public Optional<Bike> addBike(Bike bike) {
-        String sql = "INSERT INTO " + BikeTable.TABLE + "(" + BikeTable.STATION_ID + ", " + BikeTable.INFO + ") VALUES (?, ?)";
-        log.debug(sql);
+        log.debug(addSql);
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = connection.prepareStatement(addSql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, bike.getStation().getId());
             ps.setString(2, bike.getInfo());
             ps.executeUpdate();

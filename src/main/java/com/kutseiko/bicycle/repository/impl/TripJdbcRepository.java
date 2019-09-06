@@ -29,17 +29,38 @@ import org.springframework.stereotype.Component;
 public class TripJdbcRepository implements TripRepository {
 
     private final DataSource dataSource;
-    private final String SELECT_TRIPS = "SELECT * FROM " + TripTable.TABLE
-            + " LEFT JOIN " + AppUserTable.TABLE + " ON " + TripTable.USER_ID + " = " + AppUserTable.TABLE + "." + AppUserTable.ID
-            + " LEFT JOIN " + BikeTable.TABLE + " ON " + TripTable.BIKE_ID + " = " + BikeTable.TABLE + "." + BikeTable.ID
-            + " LEFT JOIN " + StationTable.TABLE + " AS bs ON " + BikeTable.STATION_ID + " = bs." + StationTable.ID
-            + " LEFT JOIN " + StationTable.TABLE + " AS ss ON " + TripTable.START_STATION_ID + " = ss." + StationTable.ID
-            + " LEFT JOIN " + StationTable.TABLE + " AS es ON " + TripTable.END_STATION_ID + " = es." + StationTable.ID;
+    private static String getAllSql;
+    private static String getByIdSql;
+    private static String updateSql;
+    private static String deletedSql;
+    private static String addSql;
+    static {
+        StringBuilder sb = new StringBuilder();
+        getAllSql = sb.append("SELECT * FROM ").append(TripTable.TABLE).append(" LEFT JOIN ").append(AppUserTable.TABLE).append(" ON ")
+            .append(TripTable.USER_ID).append(" = ").append(AppUserTable.TABLE).append(".").append(AppUserTable.ID).append(" LEFT JOIN ")
+            .append(BikeTable.TABLE).append(" ON ").append(TripTable.BIKE_ID).append(" = ").append(BikeTable.TABLE).append(".")
+            .append(BikeTable.ID).append(" LEFT JOIN ").append(StationTable.TABLE).append(" AS bs ON ").append(BikeTable.STATION_ID)
+            .append(" = bs.").append(StationTable.ID).append(" LEFT JOIN ").append(StationTable.TABLE).append(" AS ss ON ")
+            .append(TripTable.START_STATION_ID).append(" = ss.").append(StationTable.ID).append(" LEFT JOIN ").append(StationTable.TABLE)
+            .append(" AS es ON ").append(TripTable.END_STATION_ID).append(" = es.").append(StationTable.ID).toString();
+        getByIdSql = sb.append(" WHERE ").append(TripTable.TABLE).append(".").append(TripTable.ID).append("=?").toString();
+        updateSql = new StringBuilder().append("UPDATE ").append(TripTable.TABLE).append(" SET ").append(TripTable.USER_ID).append("=?, ")
+            .append(TripTable.BIKE_ID).append("=?, ").append(TripTable.START_STATION_ID).append("=?,").append(TripTable.END_STATION_ID)
+            .append("=?, ").append(TripTable.START_TIME).append("=?, ").append(TripTable.END_TIME).append("=? WHERE ").append(TripTable.ID)
+            .append("=?").toString();
+        deletedSql = new StringBuilder().append("DELETE FROM ").append(TripTable.TABLE).append(" WHERE ").append(TripTable.ID)
+            .append("=?").toString();
+        addSql = new StringBuilder().append("INSERT INTO ").append(TripTable.TABLE).append("(").append(TripTable.USER_ID).append(", ")
+            .append(TripTable.BIKE_ID).append(", ").append(TripTable.START_STATION_ID).append(", ").append(TripTable.END_STATION_ID)
+            .append(", ").append(TripTable.START_TIME).append(", ").append(TripTable.END_TIME).append(") ")
+            .append("VALUES (?, ?, ?, ?, ?, ?)").toString();
+    }
 
     @Override
     public Optional<Trip> getTripById(Long id) {
+        log.debug(getByIdSql);
         try (Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(SELECT_TRIPS + " WHERE " + TripTable.TABLE + "." + TripTable.ID + "=?")) {
+            PreparedStatement ps = connection.prepareStatement(getByIdSql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -54,9 +75,10 @@ public class TripJdbcRepository implements TripRepository {
 
     @Override
     public List<Trip> getAllTrips() {
+        log.debug(getAllSql);
         List<Trip> Trips = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(SELECT_TRIPS)) {
+             PreparedStatement ps = connection.prepareStatement(getAllSql)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Trips.add(getTripFromRS(rs));
@@ -70,11 +92,9 @@ public class TripJdbcRepository implements TripRepository {
 
     @Override
     public Optional<Trip> updateTrip(Trip trip) {
-        String sql = "UPDATE " + TripTable.TABLE + " SET " + TripTable.USER_ID + "=?, " + TripTable.BIKE_ID + "=?, "
-            + TripTable.START_STATION_ID + "=?," + TripTable.END_STATION_ID + "=?, " + TripTable.START_TIME + "=?, "
-            + TripTable.END_TIME + "=? WHERE " + TripTable.ID + "=?";
+        log.debug(updateSql);
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(updateSql)) {
             ps.setLong(1, trip.getUser().getId());
             ps.setLong(2, trip.getBike().getId());
             ps.setLong(3, trip.getStartStation().getId());
@@ -92,10 +112,10 @@ public class TripJdbcRepository implements TripRepository {
 
     @Override
     public boolean deleteTripById(Long id) {
-        String sql = "DELETE FROM " + TripTable.TABLE + " WHERE " + TripTable.ID + "=?";
+        log.debug(deletedSql);
         boolean deleted = false;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(deletedSql)) {
             ps.setLong(1, id);
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
@@ -107,11 +127,9 @@ public class TripJdbcRepository implements TripRepository {
 
     @Override
     public Optional<Trip> addTrip(Trip trip) {
-        String sql = "INSERT INTO " + TripTable.TABLE + "(" + TripTable.USER_ID + ", " + TripTable.BIKE_ID + ", "
-            + TripTable.START_STATION_ID + ", " + TripTable.END_STATION_ID + ", " + TripTable.START_TIME + ", " + TripTable.END_TIME + ") "
-            + "VALUES (?, ?, ?, ?, ?, ?)";
+        log.debug(addSql);
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = connection.prepareStatement(addSql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, trip.getUser().getId());
             ps.setLong(2, trip.getBike().getId());
             ps.setLong(3, trip.getStartStation().getId());

@@ -29,13 +29,31 @@ import javax.sql.DataSource;
 public class UserJdbcRepository implements UserRepository {
 
     private final DataSource dataSource;
+    private static String getAllSql;
+    private static String getByIdSql;
+    private static String updateSql;
+    private static String deletedSql;
+    private static String addSql;
+    static {
+        StringBuilder sb = new StringBuilder();
+        getAllSql = sb.append("SELECT * FROM ").append(AppUserTable.TABLE).toString();
+        getByIdSql = sb.append(" WHERE ").append(AppUserTable.ID).append("=?").toString();
+        updateSql = new StringBuilder().append("UPDATE ").append(AppUserTable.TABLE).append(" SET ").append(AppUserTable.BIRTHDAY)
+            .append("=?, ").append(AppUserTable.EMAIL).append("=?, ").append(AppUserTable.GENDER).append("=?::GENDER_ENUM, ")
+            .append(AppUserTable.USER_TYPE).append("=?::USER_TYPE_ENUM WHERE ").append(AppUserTable.ID).append("=?").toString();
+        deletedSql = new StringBuilder().append("DELETE FROM ").append(AppUserTable.TABLE).append(" WHERE ").append(AppUserTable.ID)
+            .append("=?").toString();
+        addSql = new StringBuilder().append("INSERT INTO ").append(AppUserTable.TABLE).append("(").append(AppUserTable.BIRTHDAY)
+            .append(", ").append(AppUserTable.EMAIL).append(", ").append(AppUserTable.GENDER).append(", ").append(AppUserTable.USER_TYPE)
+            .append(") VALUES (?, ?, ?::GENDER_ENUM, ?::USER_TYPE_ENUM)").toString();
+    }
 
     @Override
     public Optional<User> getUserById(Long id) {
-        String sql = "SELECT * FROM " + AppUserTable.TABLE + " WHERE " + AppUserTable.ID + "=?";
+        log.debug(getByIdSql);
         Optional<User> result = Optional.empty();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(getByIdSql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -51,10 +69,10 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public List<User> getAllUsers() {
-        String sql = "SELECT * FROM " + AppUserTable.TABLE;
+        log.debug(getAllSql);
         List<User> users = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(getAllSql)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 users.add(mapUserFromRS(rs));
@@ -68,11 +86,10 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public Optional<User> updateUser(User user) {
-        String sql = "UPDATE " + AppUserTable.TABLE + " SET " + AppUserTable.BIRTHDAY + "=?, " + AppUserTable.EMAIL + "=?, "
-            + AppUserTable.GENDER + "=?::GENDER_ENUM, " + AppUserTable.USER_TYPE + "=?::USER_TYPE_ENUM WHERE " + AppUserTable.ID + "=?";
+        log.debug(updateSql);
         int rowsAffected;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(updateSql)) {
             ps.setDate(1, convertLocalDateToDate(user.getDateOfBirth()));
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getGender().getName());
@@ -93,10 +110,10 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public boolean deleteUserById(Long id) {
-        String sql = "DELETE FROM " + AppUserTable.TABLE + " WHERE " + AppUserTable.ID + "=?";
+        log.debug(deletedSql);
         boolean deleted = false;
         try (Connection connection = dataSource.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+            PreparedStatement ps = connection.prepareStatement(deletedSql)) {
             ps.setLong(1, id);
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
@@ -108,10 +125,9 @@ public class UserJdbcRepository implements UserRepository {
 
     @Override
     public Optional<User> addUser(User user) {
-        String sql = "INSERT INTO " + AppUserTable.TABLE + "(" + AppUserTable.BIRTHDAY + ", " + AppUserTable.EMAIL + ", "
-            + AppUserTable.GENDER + ", " + AppUserTable.USER_TYPE + ") VALUES (?, ?, ?::GENDER_ENUM, ?::USER_TYPE_ENUM)";
+        log.debug(addSql);
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = connection.prepareStatement(addSql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setDate(1, convertLocalDateToDate(user.getDateOfBirth()));
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getGender().getName());

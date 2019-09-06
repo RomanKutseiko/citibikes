@@ -23,12 +23,29 @@ import javax.sql.DataSource;
 public class StationJdbcRepository implements StationRepository {
 
     private final DataSource dataSource;
+    private static String getAllSql;
+    private static String getByIdSql;
+    private static String updateSql;
+    private static String deletedSql;
+    private static String addSql;
+    static {
+        StringBuilder sb = new StringBuilder();
+        getAllSql = sb.append("SELECT * FROM ").append(StationTable.TABLE).toString();
+        getByIdSql = sb.append(" WHERE ").append(StationTable.ID).append("=?").toString();
+        updateSql = new StringBuilder().append("UPDATE ").append(StationTable.TABLE).append(" SET ").append(StationTable.NAME)
+            .append("=?, ").append(StationTable.LATITUDE).append("=?, ").append(StationTable.LONGITUDE).append("=? WHERE ")
+            .append(StationTable.ID).append("=?").toString();
+        deletedSql = new StringBuilder().append("DELETE FROM ").append(StationTable.TABLE).append(" WHERE ").append(StationTable.ID)
+            .append("=?").toString();
+        addSql = new StringBuilder().append("INSERT INTO ").append(StationTable.TABLE).append("(").append(StationTable.NAME).append(", ")
+            .append(StationTable.LATITUDE).append(", ").append(StationTable.LONGITUDE).append(") VALUES (?, ?, ?)").toString();
+    }
 
     @Override
     public Optional<Station> getStationById(Long id) {
-        String sql = "SELECT * FROM " + StationTable.TABLE + " WHERE " + StationTable.ID + "=?";
+        log.debug(getByIdSql);
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(getByIdSql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -43,10 +60,10 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public List<Station> getAllStations() {
-        String sql = "SELECT * FROM " + StationTable.TABLE;
+        log.debug(getAllSql);
         List<Station> stations = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(getAllSql)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 stations.add(mapStationFromRS(rs));
@@ -60,10 +77,9 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public Optional<Station> updateStation(Station station) {
-        String sql = "UPDATE " + StationTable.TABLE + " SET " + StationTable.NAME + "=?, " + StationTable.LATITUDE + "=?, "
-            + StationTable.LONGITUDE + "=? WHERE " + StationTable.ID + "=?";
+        log.debug(updateSql);
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(updateSql)) {
             ps.setString(1, station.getName());
             ps.setDouble(2, station.getLatitude());
             ps.setDouble(3, station.getLongitude());
@@ -78,10 +94,10 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public boolean deleteStationById(Long id) {
-        String sql = "DELETE FROM " + StationTable.TABLE + " WHERE " + StationTable.ID + "=?";
+        log.debug(deletedSql);
         boolean deleted = false;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql)) {
+             PreparedStatement ps = connection.prepareStatement(deletedSql)) {
             ps.setLong(1, id);
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
@@ -93,10 +109,9 @@ public class StationJdbcRepository implements StationRepository {
 
     @Override
     public Optional<Station> addStation(Station station) {
-        String sql = "INSERT INTO " + StationTable.TABLE + "(" + StationTable.NAME + ", " + StationTable.LATITUDE + ", "
-            + StationTable.LONGITUDE + ") VALUES (?, ?, ?)";
+        log.debug(addSql);
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = connection.prepareStatement(addSql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, station.getName());
             ps.setDouble(2, station.getLatitude());
             ps.setDouble(3, station.getLongitude());
