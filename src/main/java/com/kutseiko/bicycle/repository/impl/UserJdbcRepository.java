@@ -7,6 +7,7 @@ import com.kutseiko.bicycle.core.type.Gender;
 import com.kutseiko.bicycle.core.type.UserType;
 import com.kutseiko.bicycle.core.type.db.tables.AppUserTable;
 import com.kutseiko.bicycle.entity.User;
+import com.kutseiko.bicycle.exception.CustomSQLException;
 import com.kutseiko.bicycle.exception.EntityNotFoundException;
 import com.kutseiko.bicycle.repository.UserRepository;
 import java.sql.Connection;
@@ -63,7 +64,7 @@ public class UserJdbcRepository implements UserRepository {
             }
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
     }
 
@@ -79,7 +80,7 @@ public class UserJdbcRepository implements UserRepository {
             }
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return users;
     }
@@ -98,7 +99,7 @@ public class UserJdbcRepository implements UserRepository {
             rowsAffected = ps.executeUpdate();
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
 
         if (rowsAffected > 0) {
@@ -118,7 +119,7 @@ public class UserJdbcRepository implements UserRepository {
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return deleted;
     }
@@ -139,7 +140,7 @@ public class UserJdbcRepository implements UserRepository {
             }
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return Optional.of(user);
     }

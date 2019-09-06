@@ -4,6 +4,7 @@ import com.kutseiko.bicycle.core.type.db.tables.BikeTable;
 import com.kutseiko.bicycle.core.type.db.tables.StationTable;
 import com.kutseiko.bicycle.entity.Bike;
 import com.kutseiko.bicycle.entity.Station;
+import com.kutseiko.bicycle.exception.CustomSQLException;
 import com.kutseiko.bicycle.repository.BikeRepository;
 
 import java.sql.Connection;
@@ -57,7 +58,7 @@ public class BikeJdbcRepository implements BikeRepository {
             }
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return Optional.empty();
     }
@@ -74,7 +75,7 @@ public class BikeJdbcRepository implements BikeRepository {
             }
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return bikes;
     }
@@ -90,7 +91,7 @@ public class BikeJdbcRepository implements BikeRepository {
             ps.executeUpdate();
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return Optional.of(bike);
     }
@@ -105,7 +106,7 @@ public class BikeJdbcRepository implements BikeRepository {
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return deleted;
     }
@@ -124,7 +125,7 @@ public class BikeJdbcRepository implements BikeRepository {
             }
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return Optional.of(bike);
     }

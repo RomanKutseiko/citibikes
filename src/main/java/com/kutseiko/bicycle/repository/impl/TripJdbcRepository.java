@@ -12,6 +12,7 @@ import com.kutseiko.bicycle.entity.Bike;
 import com.kutseiko.bicycle.entity.Trip;
 import com.kutseiko.bicycle.entity.Station;
 import com.kutseiko.bicycle.entity.User;
+import com.kutseiko.bicycle.exception.CustomSQLException;
 import com.kutseiko.bicycle.repository.TripRepository;
 
 import java.sql.*;
@@ -68,7 +69,7 @@ public class TripJdbcRepository implements TripRepository {
             }
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return Optional.empty();
     }
@@ -85,7 +86,7 @@ public class TripJdbcRepository implements TripRepository {
             }
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return Trips;
     }
@@ -105,7 +106,7 @@ public class TripJdbcRepository implements TripRepository {
             ps.executeUpdate();
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return getTripById(trip.getId());
     }
@@ -120,7 +121,7 @@ public class TripJdbcRepository implements TripRepository {
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return deleted;
     }
@@ -143,7 +144,7 @@ public class TripJdbcRepository implements TripRepository {
             }
         } catch (SQLException e) {
             log.error(e.getMessage());
-            throw new RuntimeException(e);
+            throw new CustomSQLException(e);
         }
         return getTripById(trip.getId());
     }
