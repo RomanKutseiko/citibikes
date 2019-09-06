@@ -7,6 +7,7 @@ import org.apache.commons.lang3.EnumUtils;
 public enum UserType {
 
     CUSTOMER("CUSTOMER"),
+    UNDEFINED("UNDEFINED"),
     SUBSCRIBER("SUBSCRIBER");
 
     private String name;
