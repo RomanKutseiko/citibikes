@@ -14,12 +14,11 @@ public class CommonExceptionHandler {
 
     @ResponseBody
     @ExceptionHandler(CustomSQLException.class)
-    public ResponseEntity handleCustomException(CustomSQLException e) {
+    public ResponseEntity<CustomResponceBody> handleCustomException(CustomSQLException e) {
         log.error(e.getSqlException().getSQLState(), e.getSqlException().getErrorCode(), e.getSqlException().getMessage());
         return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body("Unfortunately, something went wrong with database, returned error code is " + e.getSqlException().getErrorCode());
+            .body(new CustomResponceBody("Unfortunately, something went wrong with database!",
+                e.getSqlException().getErrorCode()));
     }
-
-
 
 }
