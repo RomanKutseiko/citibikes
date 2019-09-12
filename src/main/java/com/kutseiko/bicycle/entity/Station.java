@@ -3,6 +3,7 @@ package com.kutseiko.bicycle.entity;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.postgresql.geometric.PGpoint;
 
 @Data
 @Accessors(chain = true)
@@ -15,8 +16,8 @@ public class Station {
     String name;
 
     @NotNull
-    Double latitude;
+    Double longitude;
 
     @NotNull
-    Double longitude;
+    Double latitude;
 }

@@ -18,6 +18,7 @@ import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.geometric.PGpoint;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -137,8 +138,8 @@ public class BikeJdbcRepository implements BikeRepository {
             .setStation(new Station()
                 .setId(rs.getLong(BikeTable.STATION_ID))
                 .setName(rs.getString(StationTable.NAME))
-                .setLatitude(rs.getDouble(StationTable.LATITUDE))
-                .setLongitude(rs.getDouble(StationTable.LONGITUDE)));
+                .setLongitude(((PGpoint) rs.getObject("coordinates")).x)
+                .setLatitude(((PGpoint) rs.getObject("coordinates")).y));
     }
 
 }

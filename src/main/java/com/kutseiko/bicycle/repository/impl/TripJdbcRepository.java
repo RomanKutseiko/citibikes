@@ -22,6 +22,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.geometric.PGpoint;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -165,18 +166,18 @@ public class TripJdbcRepository implements TripRepository {
                         .setStation(new Station()
                                 .setId(rs.getLong(14))
                                 .setName(rs.getString(17))
-                                .setLatitude(rs.getDouble(18))
-                                .setLongitude(rs.getDouble(19))))
+                                .setLongitude(((PGpoint) rs.getObject(18)).x)
+                                .setLatitude(((PGpoint) rs.getObject(18)).y)))
                .setStartStation(new Station()
-                        .setId(rs.getLong(20))
-                        .setName(rs.getString(21))
-                        .setLatitude(rs.getDouble(22))
-                        .setLongitude(rs.getDouble(23)))
+                        .setId(rs.getLong(19))
+                        .setName(rs.getString(20))
+                        .setLongitude(((PGpoint) rs.getObject(21)).x)
+                        .setLatitude(((PGpoint) rs.getObject(21)).y))
                 .setEndStation(new Station()
-                        .setId(rs.getLong(24))
-                        .setName(rs.getString(25))
-                        .setLatitude(rs.getDouble(26))
-                        .setLongitude(rs.getDouble(27)));
+                        .setId(rs.getLong(22))
+                        .setName(rs.getString(23))
+                        .setLongitude(((PGpoint) rs.getObject(24)).x)
+                        .setLatitude(((PGpoint) rs.getObject(24)).y));
     }
 
 }

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.geometric.PGpoint;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -34,12 +35,12 @@ public class StationJdbcRepository implements StationRepository {
         getAllSql = sb.append("SELECT * FROM ").append(StationTable.TABLE).toString();
         getByIdSql = sb.append(" WHERE ").append(StationTable.ID).append("=?").toString();
         updateSql = new StringBuilder().append("UPDATE ").append(StationTable.TABLE).append(" SET ").append(StationTable.NAME)
-            .append("=?, ").append(StationTable.LATITUDE).append("=?, ").append(StationTable.LONGITUDE).append("=? WHERE ")
+            .append("=?, ").append(StationTable.COORDINATES).append("=POINT(?, ?) ").append(" WHERE ")
             .append(StationTable.ID).append("=?").toString();
         deletedSql = new StringBuilder().append("DELETE FROM ").append(StationTable.TABLE).append(" WHERE ").append(StationTable.ID)
             .append("=?").toString();
         addSql = new StringBuilder().append("INSERT INTO ").append(StationTable.TABLE).append("(").append(StationTable.NAME).append(", ")
-            .append(StationTable.LATITUDE).append(", ").append(StationTable.LONGITUDE).append(") VALUES (?, ?, ?)").toString();
+            .append(StationTable.COORDINATES).append(") VALUES (?, POINT(?, ?))").toString();
     }
 
     @Override
@@ -82,8 +83,8 @@ public class StationJdbcRepository implements StationRepository {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(updateSql)) {
             ps.setString(1, station.getName());
-            ps.setDouble(2, station.getLatitude());
-            ps.setDouble(3, station.getLongitude());
+            ps.setDouble(2, station.getLongitude());
+            ps.setDouble(3, station.getLatitude());
             ps.setLong(4, station.getId());
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -114,8 +115,8 @@ public class StationJdbcRepository implements StationRepository {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(addSql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, station.getName());
-            ps.setDouble(2, station.getLatitude());
-            ps.setDouble(3, station.getLongitude());
+            ps.setDouble(2, station.getLongitude());
+            ps.setDouble(3, station.getLatitude());
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
@@ -129,8 +130,8 @@ public class StationJdbcRepository implements StationRepository {
     }
 
     private Station mapStationFromRS(ResultSet rs) throws SQLException {
-        return new Station().setId(rs.getLong(StationTable.ID)).setLatitude(rs.getDouble(StationTable.LATITUDE))
-            .setLongitude(rs.getDouble(StationTable.LONGITUDE)).setName(rs.getString(StationTable.NAME));
+        return new Station().setId(rs.getLong(StationTable.ID)).setLongitude(((PGpoint)rs.getObject("coordinates")).x)
+            .setLatitude(((PGpoint) rs.getObject("coordinates")).y).setName(rs.getString(StationTable.NAME));
     }
 
 }
