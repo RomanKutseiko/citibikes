@@ -35,6 +35,7 @@ public class UserJdbcRepository implements UserRepository {
     private static String updateSql;
     private static String deletedSql;
     private static String addSql;
+
     static {
         StringBuilder sb = new StringBuilder();
         getAllSql = sb.append("SELECT * FROM ").append(AppUserTable.TABLE).toString();
@@ -54,7 +55,7 @@ public class UserJdbcRepository implements UserRepository {
         log.debug(getByIdSql);
         Optional<User> result = Optional.empty();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(getByIdSql)) {
+            PreparedStatement ps = connection.prepareStatement(getByIdSql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -73,7 +74,7 @@ public class UserJdbcRepository implements UserRepository {
         log.debug(getAllSql);
         List<User> users = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(getAllSql)) {
+            PreparedStatement ps = connection.prepareStatement(getAllSql)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 users.add(mapUserFromRS(rs));
@@ -90,7 +91,7 @@ public class UserJdbcRepository implements UserRepository {
         log.debug(updateSql);
         int rowsAffected;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(updateSql)) {
+            PreparedStatement ps = connection.prepareStatement(updateSql)) {
             ps.setDate(1, convertLocalDateToDate(user.getDateOfBirth()));
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getGender().getName());
@@ -103,7 +104,7 @@ public class UserJdbcRepository implements UserRepository {
         }
 
         if (rowsAffected > 0) {
-            return Optional.of(user);
+            return getUserById(user.getId());
         } else {
             throw new EntityNotFoundException();
         }
@@ -128,7 +129,7 @@ public class UserJdbcRepository implements UserRepository {
     public Optional<User> addUser(User user) {
         log.debug(addSql);
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(addSql, Statement.RETURN_GENERATED_KEYS)) {
+            PreparedStatement ps = connection.prepareStatement(addSql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setDate(1, convertLocalDateToDate(user.getDateOfBirth()));
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getGender().getName());
@@ -142,7 +143,7 @@ public class UserJdbcRepository implements UserRepository {
             log.error(e.getMessage());
             throw new CustomSQLException(e);
         }
-        return Optional.of(user);
+        return getUserById(user.getId());
     }
 
     private User mapUserFromRS(ResultSet rs) throws SQLException {

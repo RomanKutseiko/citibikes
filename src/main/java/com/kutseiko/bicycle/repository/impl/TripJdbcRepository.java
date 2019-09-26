@@ -16,6 +16,7 @@ import com.kutseiko.bicycle.exception.CustomSQLException;
 import com.kutseiko.bicycle.repository.TripRepository;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -163,21 +164,23 @@ public class TripJdbcRepository implements TripRepository {
                 .setBike(new Bike()
                         .setId(rs.getLong(13))
                         .setInfo(rs.getString(BikeTable.INFO))
+                        .setCreatedDate(rs.getObject(BikeTable.CREATED_DATE, LocalDateTime.class))
+                        .setUpdatedDate(rs.getObject(BikeTable.UPDATED_DATE, LocalDateTime.class))
                         .setStation(new Station()
                                 .setId(rs.getLong(14))
-                                .setName(rs.getString(17))
-                                .setLongitude(((PGpoint) rs.getObject(18)).x)
-                                .setLatitude(((PGpoint) rs.getObject(18)).y)))
+                                .setName(rs.getString(19))
+                                .setLongitude(((PGpoint) rs.getObject(20)).x)
+                                .setLatitude(((PGpoint) rs.getObject(20)).y)))
                .setStartStation(new Station()
-                        .setId(rs.getLong(19))
-                        .setName(rs.getString(20))
-                        .setLongitude(((PGpoint) rs.getObject(21)).x)
-                        .setLatitude(((PGpoint) rs.getObject(21)).y))
+                        .setId(rs.getLong(21))
+                        .setName(rs.getString(22))
+                        .setLongitude(((PGpoint) rs.getObject(23)).x)
+                        .setLatitude(((PGpoint) rs.getObject(23)).y))
                 .setEndStation(new Station()
-                        .setId(rs.getLong(22))
-                        .setName(rs.getString(23))
-                        .setLongitude(((PGpoint) rs.getObject(24)).x)
-                        .setLatitude(((PGpoint) rs.getObject(24)).y));
+                        .setId(rs.getLong(24))
+                        .setName(rs.getString(25))
+                        .setLongitude(((PGpoint) rs.getObject(26)).x)
+                        .setLatitude(((PGpoint) rs.getObject(26)).y));
     }
 
 }

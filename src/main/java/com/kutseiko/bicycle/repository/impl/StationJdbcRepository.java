@@ -30,6 +30,7 @@ public class StationJdbcRepository implements StationRepository {
     private static String updateSql;
     private static String deletedSql;
     private static String addSql;
+
     static {
         StringBuilder sb = new StringBuilder();
         getAllSql = sb.append("SELECT * FROM ").append(StationTable.TABLE).toString();
@@ -47,7 +48,7 @@ public class StationJdbcRepository implements StationRepository {
     public Optional<Station> getStationById(Long id) {
         log.debug(getByIdSql);
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(getByIdSql)) {
+            PreparedStatement ps = connection.prepareStatement(getByIdSql)) {
             ps.setLong(1, id);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -65,7 +66,7 @@ public class StationJdbcRepository implements StationRepository {
         log.debug(getAllSql);
         List<Station> stations = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(getAllSql)) {
+            PreparedStatement ps = connection.prepareStatement(getAllSql)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 stations.add(mapStationFromRS(rs));
@@ -81,7 +82,7 @@ public class StationJdbcRepository implements StationRepository {
     public Optional<Station> updateStation(Station station) {
         log.debug(updateSql);
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(updateSql)) {
+            PreparedStatement ps = connection.prepareStatement(updateSql)) {
             ps.setString(1, station.getName());
             ps.setDouble(2, station.getLongitude());
             ps.setDouble(3, station.getLatitude());
@@ -91,7 +92,7 @@ public class StationJdbcRepository implements StationRepository {
             log.error(e.getMessage());
             throw new CustomSQLException(e);
         }
-        return Optional.of(station);
+        return getStationById(station.getId());
     }
 
     @Override
@@ -99,7 +100,7 @@ public class StationJdbcRepository implements StationRepository {
         log.debug(deletedSql);
         boolean deleted = false;
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(deletedSql)) {
+            PreparedStatement ps = connection.prepareStatement(deletedSql)) {
             ps.setLong(1, id);
             deleted = ps.executeUpdate() == 1;
         } catch (SQLException e) {
@@ -113,7 +114,7 @@ public class StationJdbcRepository implements StationRepository {
     public Optional<Station> addStation(Station station) {
         log.debug(addSql);
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement ps = connection.prepareStatement(addSql, Statement.RETURN_GENERATED_KEYS)) {
+            PreparedStatement ps = connection.prepareStatement(addSql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, station.getName());
             ps.setDouble(2, station.getLongitude());
             ps.setDouble(3, station.getLatitude());
@@ -126,11 +127,11 @@ public class StationJdbcRepository implements StationRepository {
             log.error(e.getMessage());
             throw new CustomSQLException(e);
         }
-        return Optional.of(station);
+        return getStationById(station.getId());
     }
 
     private Station mapStationFromRS(ResultSet rs) throws SQLException {
-        return new Station().setId(rs.getLong(StationTable.ID)).setLongitude(((PGpoint)rs.getObject("coordinates")).x)
+        return new Station().setId(rs.getLong(StationTable.ID)).setLongitude(((PGpoint) rs.getObject("coordinates")).x)
             .setLatitude(((PGpoint) rs.getObject("coordinates")).y).setName(rs.getString(StationTable.NAME));
     }
 

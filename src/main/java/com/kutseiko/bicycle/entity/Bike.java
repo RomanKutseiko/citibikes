@@ -1,5 +1,6 @@
 package com.kutseiko.bicycle.entity;
 
+import java.time.LocalDateTime;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -15,4 +16,8 @@ public class Bike {
     Station station;
 
     String info;
+
+    LocalDateTime createdDate;
+
+    LocalDateTime updatedDate;
 }
