@@ -27,8 +27,7 @@ public class StationServiceImpl implements StationService {
 
     @Override
     public Optional<Station> createStation(StationDto stationDto) {
-        Station station = new Station().setName(stationDto.getName()).setLatitude(stationDto.getLatitude())
-            .setLongitude(stationDto.getLongitude());
+        Station station = new Station().setName(stationDto.getName()).setCoordinates(stationDto.getCoordinates());
         return stationRepository.addStation(station);
     }
 
@@ -39,8 +38,7 @@ public class StationServiceImpl implements StationService {
 
     @Override
     public Optional<Station> updateStation(Long id, StationDto stationDto) {
-        Station station = new Station().setId(id).setName(stationDto.getName()).setLatitude(stationDto.getLatitude())
-            .setLongitude(stationDto.getLongitude());
+        Station station = new Station().setId(id).setName(stationDto.getName()).setCoordinates(stationDto.getCoordinates());
         return stationRepository.updateStation(station);
     }
 }

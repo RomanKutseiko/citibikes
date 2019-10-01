@@ -169,18 +169,15 @@ public class TripJdbcRepository implements TripRepository {
                         .setStation(new Station()
                                 .setId(rs.getLong(14))
                                 .setName(rs.getString(19))
-                                .setLongitude(((PGpoint) rs.getObject(20)).x)
-                                .setLatitude(((PGpoint) rs.getObject(20)).y)))
+                                .setCoordinates((PGpoint) rs.getObject(20))))
                .setStartStation(new Station()
                         .setId(rs.getLong(21))
                         .setName(rs.getString(22))
-                        .setLongitude(((PGpoint) rs.getObject(23)).x)
-                        .setLatitude(((PGpoint) rs.getObject(23)).y))
+                        .setCoordinates((PGpoint) rs.getObject(23)))
                 .setEndStation(new Station()
                         .setId(rs.getLong(24))
                         .setName(rs.getString(25))
-                        .setLongitude(((PGpoint) rs.getObject(26)).x)
-                        .setLatitude(((PGpoint) rs.getObject(26)).y));
+                        .setCoordinates((PGpoint) rs.getObject(26)));
     }
 
 }

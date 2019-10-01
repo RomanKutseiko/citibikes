@@ -143,8 +143,7 @@ public class BikeJdbcRepository implements BikeRepository {
             .setStation(new Station()
                 .setId(rs.getLong(BikeTable.STATION_ID))
                 .setName(rs.getString(StationTable.NAME))
-                .setLongitude(((PGpoint) rs.getObject("coordinates")).x)
-                .setLatitude(((PGpoint) rs.getObject("coordinates")).y));
+                .setCoordinates((PGpoint) rs.getObject(StationTable.COORDINATES)));
     }
 
 }

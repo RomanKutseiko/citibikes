@@ -84,8 +84,8 @@ public class StationJdbcRepository implements StationRepository {
         try (Connection connection = dataSource.getConnection();
             PreparedStatement ps = connection.prepareStatement(updateSql)) {
             ps.setString(1, station.getName());
-            ps.setDouble(2, station.getLongitude());
-            ps.setDouble(3, station.getLatitude());
+            ps.setDouble(2, station.getCoordinates().x);
+            ps.setDouble(3, station.getCoordinates().y);
             ps.setLong(4, station.getId());
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -116,8 +116,8 @@ public class StationJdbcRepository implements StationRepository {
         try (Connection connection = dataSource.getConnection();
             PreparedStatement ps = connection.prepareStatement(addSql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, station.getName());
-            ps.setDouble(2, station.getLongitude());
-            ps.setDouble(3, station.getLatitude());
+            ps.setDouble(2, station.getCoordinates().x);
+            ps.setDouble(3, station.getCoordinates().y);
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
@@ -131,8 +131,11 @@ public class StationJdbcRepository implements StationRepository {
     }
 
     private Station mapStationFromRS(ResultSet rs) throws SQLException {
-        return new Station().setId(rs.getLong(StationTable.ID)).setLongitude(((PGpoint) rs.getObject("coordinates")).x)
-            .setLatitude(((PGpoint) rs.getObject("coordinates")).y).setName(rs.getString(StationTable.NAME));
+        return new Station()
+            .setId(rs.getLong(StationTable.ID))
+            .setName(rs.getString(StationTable.NAME))
+            .setCoordinates((PGpoint) rs.getObject(StationTable.COORDINATES));
+
     }
 
 }
