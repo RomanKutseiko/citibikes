@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
 public @interface CustomJoinTable {
-    public String tableName() default "";
-    public String columnName() default "";
+    public String tableName();
+    public String columnName();
 }
