@@ -1,6 +1,5 @@
 package com.kutseiko.bicycle.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.kutseiko.bicycle.annotations.ColumnName;
 import com.kutseiko.bicycle.annotations.TableName;
 import com.kutseiko.bicycle.core.type.db.tables.StationTable;
@@ -23,7 +22,6 @@ public class Station {
     String name;
 
     @NotNull
-    @JsonIgnoreProperties({"type", "value"})
     @ColumnName(name = StationTable.COORDINATES)
     PGpoint coordinates;
 }
