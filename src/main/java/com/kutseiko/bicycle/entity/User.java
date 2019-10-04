@@ -1,6 +1,7 @@
 package com.kutseiko.bicycle.entity;
 
 import com.kutseiko.bicycle.annotations.ColumnName;
+import com.kutseiko.bicycle.annotations.IdColumn;
 import com.kutseiko.bicycle.annotations.TableName;
 import com.kutseiko.bicycle.core.type.Gender;
 import com.kutseiko.bicycle.core.type.UserType;
@@ -16,6 +17,7 @@ import lombok.experimental.Accessors;
 public class User {
 
     @NotNull
+    @IdColumn
     @ColumnName(name = AppUserTable.ID)
     Long id;
 

@@ -3,6 +3,7 @@ package com.kutseiko.bicycle.repository;
 import static com.kutseiko.bicycle.utils.DateConverter.convertDateToLocalDate;
 
 import com.kutseiko.bicycle.annotations.ColumnName;
+import com.kutseiko.bicycle.annotations.IdColumn;
 import com.kutseiko.bicycle.annotations.TableName;
 import com.kutseiko.bicycle.core.type.Gender;
 import com.kutseiko.bicycle.core.type.UserType;
@@ -18,7 +19,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,7 +55,9 @@ public class GenericDao<E> {
         this.entityClass = entityClass;
         this.dataSource = dataSource;
         StringBuilder sb = new StringBuilder();
-        getAllSql = sb.append("SELECT * FROM ").append(entityClass.getAnnotation(TableName.class).name()).toString(); //AppUserTable.TABLE
+        Field id = Arrays.stream(entityClass.getDeclaredFields()).filter(f -> Objects.nonNull(f.getAnnotation(IdColumn.class))).findFirst().get();
+        getAllSql = sb.append("SELECT * FROM ").append(entityClass.getAnnotation(TableName.class).name()).toString();
+        getByIdSql = sb.append(" WHERE ").append(id.getAnnotation(ColumnName.class).name()).append("=?").toString();
     }
 
     public List<E> findAll() {
@@ -60,6 +65,22 @@ public class GenericDao<E> {
         List<E> items = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
             PreparedStatement ps = connection.prepareStatement(getAllSql)) {
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                items.add(mapItemFromRS(rs));
+            }
+        } catch (SQLException e) {
+            log.error(e.getMessage());
+            throw new CustomSQLException(e);
+        }
+        return items;
+    }
+
+    public List<E> findById() {
+        log.debug(getByIdSql);
+        List<E> items = new ArrayList<>();
+        try (Connection connection = dataSource.getConnection();
+            PreparedStatement ps = connection.prepareStatement(getByIdSql)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 items.add(mapItemFromRS(rs));
